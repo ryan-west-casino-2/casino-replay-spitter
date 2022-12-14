@@ -1,0 +1,170 @@
+<!DOCTYPE html>
+<html style="background: black" translate="no" class="notranslate">
+
+<head>
+    <title>...</title>
+
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+
+    <meta name="viewport" content="width=device-width, user-scalable=no, initial-scale=1" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="mobile-web-app-capable" content="yes" />
+    <meta name="google" content="notranslate" />
+    <meta name="format-detection" content="telephone=no" />
+
+    <!-- FavIcons -->
+    <link rel="apple-touch-icon" sizes="180x180" href="/all/games/slots/ReelHeist/assets/default/page/favicons/apple-touch-icon.png" />
+    <link rel="icon" type="image/png" sizes="32x32" href="/all/games/slots/ReelHeist/assets/default/page/favicons/favicon-32x32.png" />
+    <link rel="icon" type="image/png" sizes="16x16" href="/all/games/slots/ReelHeist/assets/default/page/favicons/favicon-16x16.png" />
+    <link rel="mask-icon" href="/all/games/slots/ReelHeist/assets/default/page/favicons/safari-pinned-tab.svg" color="#5bbad5" />
+    <link rel="shortcut icon" href="/all/games/slots/ReelHeist/assets/default/page/favicons/favicon.ico" />
+    <meta name="theme-color" content="#ffffff" />
+</head>
+
+<body>
+    <img class="loading-icon" style="position: absolute; top: 0; bottom: 0; left: 0; right: 0; margin: auto" src="/all/games/slots/ReelHeist/../../../assets/loading.svg">
+
+    <script type="text/javascript">
+        window.com = window.com || {};
+        window.com.casino = window.com.casino || {};
+        com.casino.cdn = '/all/games/slots/ReelHeist/';
+        com.casino.baseCdn = '/all/games/';
+        com.casino.barsPath = '/all/games/slots/ReelHeist/../../bars-next/';
+        com.casino.bridgePath = '/all/games/slots/ReelHeist/../../bridge/';
+    </script>
+
+    <!-- Import Bridge -->
+    <script type="text/javascript" crossorigin="" src="/all/games/slots/ReelHeist/../../bridge/bridge.min.js?t=1670496529199"></script>
+
+
+    <!-- Kronos launcher -->
+    <script type="text/javascript">
+        (function() {
+            'use strict';
+
+            var params = com.casino.utils.getURLParams();
+            var postParams = [];
+            if (Object.keys(postParams).length > 0) {
+                try {
+                    window.sessionStorage.setItem('launcherPostParamsCache', JSON.stringify(postParams));
+                } catch (e) {
+                    // Just to be sure that we wont throw error if otherwise valid game launch will fail.
+                }
+            } else {
+                try {
+                    postParams = JSON.parse(window.sessionStorage.getItem('launcherPostParamsCache')) || {};
+                } catch (e) {
+                    // This is to make sure we don't throw error on empty session storage cache.
+                    postParams = {};
+                }
+            }
+            Object.keys(postParams).forEach(function(key) {
+                params[key] = postParams[key];
+            });
+
+            com.casino.preconfig = {
+                bridge: {
+                    postParams: [],
+                    feedUrl: 'https://feed-softswiss2.redtiger.cash',
+                    autoStart: true,
+                    timestamp: '?t=1670496529199',
+                    notifications: {
+                        inRealPlay: true,
+                        inDemoPlay: false,
+                        showUnfinishedWins: true,
+                        showUnfinishedNoWins: false
+                    },
+                    provider: 'kronos',
+                    operator: 'softswiss2',
+                    bridgeLaunch: true
+                },
+                server: {
+                    rgsApi: 'https://scoobiedog.casinoman.app/api/games/redtiger/97f60b4f-e0c8-4a2b-9cd6-d822ab3d73c6/',
+                    launchParams: {
+                        gameId: 'ReelHeist'
+                    }
+                },
+                game: {
+                    namespace: 'com.casino.game',
+                    preconfig: {
+                        cdn: '/all/games/slots/ReelHeist/',
+                        delayedBalanceUpdate: false,
+                        defaultLang: 'en',
+                        splash: true,
+                        hideCurrency: isTrue('hideCurrency'),
+                        disclaimer: '',
+                        skin: params['skin'],
+                        gameType: 'slot',
+                        gameAppId: 'ReelHeist',
+                        responsive: true,
+                        addedAnticipation: params['addedAnticipation'] === 'false' ? false : true
+                    }
+                },
+                bars: {
+                    basePath: '/all/games/slots/ReelHeist/../../bars-next/',
+                    options: {
+                        historySrc: '/all/games/slots/ReelHeist/../../history/'
+                    }
+                },
+                analytics: {
+                    gaTrackingIds: []
+                }
+            };
+            com.casino.bridge.init(com.casino.preconfig);
+
+            function isTrue(name) {
+                return params[name] === 'true' || params[name] === '1';
+            }
+
+            function onGameReady(callback) {
+                var id = setInterval(function() {
+                    var GameAPI;
+                    var BarsAPI;
+
+                    try {
+                        GameAPI = com.casino.bridge.integration.GameAPI;
+                        BarsAPI = com.casino.bridge.integration.BarsAPI;
+                    } catch (e) {}
+
+                    if (GameAPI) {
+                        window.clearInterval(id);
+                        callback(GameAPI, BarsAPI);
+                    }
+
+                }, 100);
+            }
+
+            onGameReady(function(GameAPI, BarsAPI) {
+                window.addEventListener('message', function(e) {
+                    var type = e.data.type
+                    var payload = e.data.payload
+
+                    switch (type) {
+                        case 'setBalance':
+                            GameAPI.setBalance(payload.balance, payload.freebets)
+                            break;
+                        case 'triggerAction':
+                            GameAPI.action(payload.action)
+                            break;
+                        case 'showMessage':
+                            BarsAPI.showMessage(payload.title, payload.msg)
+                            break;
+                        case 'hideMessage':
+                            BarsAPI.hideMessage()
+                            break;
+                        case 'autoPlayStart':
+                            GameAPI.autoPlayStart()
+                            break;
+                        case 'autoPlayStop':
+                            GameAPI.autoPlayStop()
+                            break;
+                    }
+                })
+            })
+        })();
+    </script>
+
+</body>
+
+</html>

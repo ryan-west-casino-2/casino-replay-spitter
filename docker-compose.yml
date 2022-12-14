@@ -1,0 +1,62 @@
+version: '2'
+services:
+  nginx:
+    image: docker.io/devilbox/nginx-stable:alpine
+    container_name: bowie-container-nginx
+    restart: always
+    environment:
+      - PHP_FPM_ENABLE=1
+      - PHP_FPM_SERVER_ADDR=app
+    volumes:
+      - .:/var/www/default
+      - ./public:/var/www/default/htdocs
+    ports:
+      - 22777:80
+    depends_on:
+      - app
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: bowie-container-app
+    volumes:
+      - .:/var/www/default:rw
+      - ./public:/var/www/default/htdocs
+    depends_on:
+      - pgsql
+      - pgsql-imported
+      - redis
+  pgsql:
+    image: docker.io/library/postgres:14.6-alpine
+    container_name: bowie-container-pgsql
+    environment:
+      POSTGRES_DB: default
+      POSTGRES_USER: default
+      POSTGRES_PASSWORD: default
+    volumes:
+      - pgsql-data:/var/lib/postgresql/data
+  redis:
+    image: library/redis:7.0.5-alpine
+    container_name: bowie-container-redis
+    restart: always
+    volumes:
+      - redis-data:/data
+  pgsql-imported:
+    image: docker.io/library/postgres:14.6-alpine
+    container_name: bowie-container-pgsql-imported
+    environment:
+      POSTGRES_DB: default
+      POSTGRES_USER: default
+      POSTGRES_PASSWORD: default
+    volumes:
+      - pgsql-imported-data:/var/lib/postgresql/data
+  redis:
+    image: library/redis:7.0.5-alpine
+    container_name: bowie-container-redis
+    restart: always
+    volumes:
+      - redis-data:/data
+volumes:
+  redis-data:
+  pgsql-data:
+  pgsql-imported-data:
